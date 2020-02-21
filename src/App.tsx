@@ -3,6 +3,16 @@ import { useQuery, useMutation } from '@apollo/react-hooks';
 import { gql } from 'apollo-boost';
 import styled from 'styled-components';
 
+type Data = {
+  todos?: Todo[];
+};
+
+type Todo = {
+  id: string;
+  text: string;
+  done: boolean;
+};
+
 const GET_TODOS = gql`
   query getTodos {
     todos {
@@ -36,6 +46,19 @@ const ADD_TODO = gql`
     }
   }
 `;
+
+const DELETE_TODO = gql`
+  mutation DeleteTodo($id: uuid) {
+    delete_todos(where: { id: { _eq: $id } }) {
+      returning {
+        done
+        id
+        text
+      }
+    }
+  }
+`;
+
 // list totos
 // add todos
 // toggle todos
@@ -47,6 +70,7 @@ function App() {
   const [addTodo] = useMutation(ADD_TODO, {
     onCompleted: () => setText('')
   });
+  const [deleteTodo] = useMutation(DELETE_TODO);
 
   const handleToggleTodo = async (id: string, done: boolean) => {
     const data = await toggleTodo({ variables: { id, done: !done } });
@@ -68,6 +92,32 @@ function App() {
       ]
     });
     console.log('added todo', data);
+  };
+
+  const handleDeleteTodo = async (id: string): Promise<void> => {
+    const isConfirmed = window.confirm('Do you want to delete this todo?');
+
+    if (isConfirmed) {
+      const data = await deleteTodo({
+        variables: { id },
+        // refetchQueries: [
+        //   {
+        //     query: GET_TODOS
+        //   }
+        // ]
+        update: cache => {
+          const prevData: Data | null = cache.readQuery({ query: GET_TODOS });
+          const newTodos =
+            prevData && prevData.todos
+              ? prevData.todos.filter(todo => todo.id !== id)
+              : null;
+          cache.writeQuery({ query: GET_TODOS, data: { todos: newTodos } });
+        }
+      });
+      console.log('deleted todo', data);
+    }
+
+    // const data = console.log('deleted todo', data);
   };
 
   if (loading) {
@@ -98,7 +148,7 @@ function App() {
               onDoubleClick={() => handleToggleTodo(id, done)}
             >
               <span>{text}</span>
-              <button>&times;</button>
+              <button onClick={() => handleDeleteTodo(id)}>&times;</button>
             </Text>
           )
         )}
