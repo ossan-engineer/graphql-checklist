@@ -130,13 +130,6 @@ function App() {
     // const data = console.log('deleted todo', data);
   };
 
-  // if (loading) {
-  //   return (
-  //     <CircularProgressWrapper>
-  //       <CircularProgress />
-  //     </CircularProgressWrapper>
-  //   );
-  // }
   if (error) {
     return <div>Error fetching todos!</div>;
   }
