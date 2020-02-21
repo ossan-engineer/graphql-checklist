@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, SyntheticEvent } from 'react';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import { gql } from 'apollo-boost';
 import styled from 'styled-components';
@@ -24,17 +24,49 @@ const TOGGLE_TODO = gql`
     }
   }
 `;
+
+const ADD_TODO = gql`
+  mutation MyMutation($text: String) {
+    insert_todos(objects: { text: $text }) {
+      returning {
+        done
+        id
+        text
+      }
+    }
+  }
+`;
 // list totos
 // add todos
 // toggle todos
 // delete todos
 function App() {
+  const [text, setText] = useState('');
   const { loading, data, error } = useQuery(GET_TODOS);
   const [toggleTodo] = useMutation(TOGGLE_TODO);
+  const [addTodo] = useMutation(ADD_TODO);
 
   const handleToggleTodo = async (id: string, done: boolean) => {
     const data = await toggleTodo({ variables: { id, done: !done } });
-    console.log(data);
+    console.log('toggled todo', data);
+  };
+
+  const handleAddTodo = async (e: SyntheticEvent, text: string) => {
+    e.preventDefault();
+
+    if (!text.trim()) {
+      return;
+    }
+    const data = await addTodo({
+      variables: { text },
+      refetchQueries: [
+        {
+          query: GET_TODOS
+        }
+      ]
+    });
+    console.log('added todo', data);
+    setText('');
   };
 
   if (loading) {
@@ -47,8 +79,13 @@ function App() {
   return (
     <div>
       <h1>GraphQL Checklist</h1>
-      <form>
-        <input type='text' placeholder='Write your todo' />
+      <form onSubmit={e => handleAddTodo(e, text)}>
+        <input
+          type='text'
+          placeholder='Write your todo'
+          value={text}
+          onChange={e => setText(e.target.value)}
+        />
         <button type='submit'>Create</button>
       </form>
       <div>
