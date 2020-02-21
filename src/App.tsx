@@ -2,6 +2,19 @@ import React, { useState, SyntheticEvent } from 'react';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import { gql } from 'apollo-boost';
 import styled from 'styled-components';
+import Typography from '@material-ui/core/Typography';
+import AppBar from '@material-ui/core/AppBar';
+import Button from '@material-ui/core/Button';
+import Toolbar from '@material-ui/core/Toolbar';
+import TextField from '@material-ui/core/TextField';
+import IconButton from '@material-ui/core/IconButton';
+import DeleteIcon from '@material-ui/icons/Delete';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import ListItemText from '@material-ui/core/ListItemText';
+import Checkbox from '@material-ui/core/Checkbox';
 
 type Data = {
   todos?: Todo[];
@@ -128,34 +141,63 @@ function App() {
   }
 
   return (
-    <div>
-      <h1>GraphQL Checklist</h1>
-      <form onSubmit={e => handleAddTodo(e, text)}>
-        <input
-          type='text'
+    <>
+      <AppBar position='static'>
+        <Toolbar>
+          <Typography variant='h6'>GraphQL Checklist</Typography>
+        </Toolbar>
+      </AppBar>
+      <StyledForm onSubmit={e => handleAddTodo(e, text)}>
+        <TextField
           placeholder='Write your todo'
           value={text}
           onChange={e => setText(e.target.value)}
+          fullWidth
         />
-        <button type='submit'>Create</button>
-      </form>
-      <div>
+        <Button type='submit' variant='outlined' color='primary'>
+          Create
+        </Button>
+      </StyledForm>
+      <List>
         {data.todos.map(
           ({ id, text, done }: { id: string; text: string; done: boolean }) => (
-            <Text
+            <ListItem
               key={id}
-              done={done}
-              onDoubleClick={() => handleToggleTodo(id, done)}
+              dense
+              button
+              onClick={() => handleToggleTodo(id, done)}
             >
-              <span>{text}</span>
-              <button onClick={() => handleDeleteTodo(id)}>&times;</button>
-            </Text>
+              <ListItemIcon>
+                <Checkbox
+                  color='primary'
+                  checked={done}
+                  inputProps={{ 'aria-labelledby': id }}
+                />
+              </ListItemIcon>
+              <ListItemText id={id}>
+                <Text done={done}>{text}</Text>
+              </ListItemText>
+              <ListItemSecondaryAction>
+                <IconButton onClick={() => handleDeleteTodo(id)}>
+                  <DeleteIcon />
+                </IconButton>
+              </ListItemSecondaryAction>
+            </ListItem>
           )
         )}
-      </div>
-    </div>
+      </List>
+    </>
   );
 }
+
+const StyledForm = styled.form`
+  display: flex;
+  padding: 30px 30px 20px;
+
+  & > div:first-child {
+    margin-right: 20px;
+  }
+`;
 
 const Text = styled.p`
   text-decoration: ${({ done }: { done: boolean }) =>
