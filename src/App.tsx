@@ -44,7 +44,9 @@ function App() {
   const [text, setText] = useState('');
   const { loading, data, error } = useQuery(GET_TODOS);
   const [toggleTodo] = useMutation(TOGGLE_TODO);
-  const [addTodo] = useMutation(ADD_TODO);
+  const [addTodo] = useMutation(ADD_TODO, {
+    onCompleted: () => setText('')
+  });
 
   const handleToggleTodo = async (id: string, done: boolean) => {
     const data = await toggleTodo({ variables: { id, done: !done } });
@@ -66,7 +68,6 @@ function App() {
       ]
     });
     console.log('added todo', data);
-    setText('');
   };
 
   if (loading) {
