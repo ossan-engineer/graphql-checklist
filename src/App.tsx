@@ -15,6 +15,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItemText from '@material-ui/core/ListItemText';
 import Checkbox from '@material-ui/core/Checkbox';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 type Data = {
   todos?: Todo[];
@@ -129,9 +130,13 @@ function App() {
     // const data = console.log('deleted todo', data);
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  // if (loading) {
+  //   return (
+  //     <CircularProgressWrapper>
+  //       <CircularProgress />
+  //     </CircularProgressWrapper>
+  //   );
+  // }
   if (error) {
     return <div>Error fetching todos!</div>;
   }
@@ -154,34 +159,48 @@ function App() {
           Create
         </Button>
       </StyledForm>
-      <List>
-        {data.todos.map(
-          ({ id, text, done }: { id: string; text: string; done: boolean }) => (
-            <ListItem
-              key={id}
-              dense
-              button
-              onClick={() => handleToggleTodo(id, done)}
-            >
-              <ListItemIcon>
-                <Checkbox
-                  color='primary'
-                  checked={done}
-                  inputProps={{ 'aria-labelledby': id }}
-                />
-              </ListItemIcon>
-              <ListItemText id={id}>
-                <Text done={done}>{text}</Text>
-              </ListItemText>
-              <ListItemSecondaryAction>
-                <IconButton onClick={() => handleDeleteTodo(id)}>
-                  <DeleteIcon />
-                </IconButton>
-              </ListItemSecondaryAction>
-            </ListItem>
-          )
-        )}
-      </List>
+      {loading ? (
+        <CircularProgressWrapper>
+          <CircularProgress />
+        </CircularProgressWrapper>
+      ) : (
+        <List>
+          {data.todos.map(
+            ({
+              id,
+              text,
+              done
+            }: {
+              id: string;
+              text: string;
+              done: boolean;
+            }) => (
+              <ListItem
+                key={id}
+                dense
+                button
+                onClick={() => handleToggleTodo(id, done)}
+              >
+                <ListItemIcon>
+                  <Checkbox
+                    color='primary'
+                    checked={done}
+                    inputProps={{ 'aria-labelledby': id }}
+                  />
+                </ListItemIcon>
+                <ListItemText id={id}>
+                  <Text done={done}>{text}</Text>
+                </ListItemText>
+                <ListItemSecondaryAction>
+                  <IconButton onClick={() => handleDeleteTodo(id)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </ListItem>
+            )
+          )}
+        </List>
+      )}
     </>
   );
 }
@@ -198,6 +217,12 @@ const StyledForm = styled.form`
 const Text = styled.p`
   text-decoration: ${({ done }: { done: boolean }) =>
     done ? 'line-through' : 'none'};
+`;
+
+const CircularProgressWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 export default App;
